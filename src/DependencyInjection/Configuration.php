@@ -27,7 +27,7 @@ final class Configuration implements ConfigurationInterface
         $treeBuilder->getRootNode()
             ->children()
                 ->scalarNode('twig_prefix')
-                    ->info('Prefix for Twig form functions (e.g. "derafu_" → derafu_form(), derafu_form_start()). Empty string for no prefix.')
+                    ->info('Prefix for Twig form functions (e.g. "derafu_" → derafu_form(), derafu_form_start()). Defaults to "derafu_" to avoid collisions with symfony/form.')
                     ->defaultValue('derafu_')
                     ->cannotBeEmpty()
                 ->end()
