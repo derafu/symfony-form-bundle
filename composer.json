@@ -1,0 +1,50 @@
+{
+    "name": "derafu/symfony-form-bundle",
+    "description": "Derafu: Symfony Form Bundle - Integrates derafu/form with Symfony.",
+    "type": "symfony-bundle",
+    "homepage": "https://www.derafu.dev/docs/symfony/form-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Esteban De La Fuente Rubio / Derafu",
+            "homepage": "https://www.derafu.dev"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/derafu/symfony-form-bundle/issues",
+        "source": "https://github.com/derafu/symfony-form-bundle"
+    },
+    "autoload": {
+        "psr-4": {
+            "Derafu\\FormBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Derafu\\TestsFormBundle\\": "tests/src/"
+        }
+    },
+    "require": {
+        "php": "^8.5",
+        "symfony/framework-bundle": "^8.0",
+        "symfony/twig-bundle": "^8.0",
+        "derafu/form": "*"
+    },
+    "require-dev": {
+        "ext-xdebug": "*",
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "phpstan/phpstan": "^1.12",
+        "phpunit/phpunit": "^11.5"
+    },
+    "scripts": {
+        "docs": "php tools/phpdocumentor run --config=phpdoc.xml",
+        "tests": "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration=phpunit.xml",
+        "phpcs-fix": "vendor/bin/php-cs-fixer fix -v --config=php-cs-fixer.php",
+        "phpcs": "vendor/bin/php-cs-fixer fix -v --dry-run --diff --config=php-cs-fixer.php",
+        "phpstan": "vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=1G",
+        "phpstan-export": "vendor/bin/phpstan analyse --configuration=phpstan.neon --level 9 --generate-baseline",
+        "build": "npm run build"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -1,0 +1,58 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # ── Form Renderer ─────────────────────────────────────────────────
+    # Created via the static factory. It sets up its own internal Twig
+    # environment (derafu/renderer) with the form template paths, element
+    # renderers, and widget renderers — fully self-contained.
+
+    Derafu\Form\Contract\Renderer\FormRendererInterface:
+        factory: ['Derafu\Form\Factory\FormRendererFactory', 'create']
+        arguments:
+            - []
+
+    # ── Twig Extension (registered in Symfony's Twig) ─────────────────
+    # This is a SEPARATE instance from the one inside derafu/renderer's
+    # Twig. It bridges derafu/form into Symfony page templates with a
+    # configurable prefix (default "derafu_") to avoid collisions with
+    # symfony/form's Twig functions.
+
+    Derafu\Form\Renderer\FormTwigExtension:
+        arguments:
+            $renderer: '@Derafu\Form\Contract\Renderer\FormRendererInterface'
+            $charset: 'UTF-8'
+            $prefix: '%derafu_form.twig_prefix%'
+        tags:
+            - { name: twig.extension }
+
+    # ── Type System ───────────────────────────────────────────────────
+
+    Derafu\Form\Type\TypeProvider: ~
+
+    Derafu\Form\Type\TypeRegistry:
+        arguments:
+            $types: '@Derafu\Form\Type\TypeProvider'
+
+    Derafu\Form\Type\TypeResolver:
+        arguments:
+            $typeRegistry: '@Derafu\Form\Type\TypeRegistry'
+
+    # ── Form Factory ──────────────────────────────────────────────────
+
+    Derafu\Form\Factory\FormFactory:
+        arguments:
+            $typeResolver: '@Derafu\Form\Type\TypeResolver'
+
+    # ── Interface Aliases ─────────────────────────────────────────────
+
+    Derafu\Form\Contract\Factory\FormFactoryInterface:
+        alias: Derafu\Form\Factory\FormFactory
+
+    Derafu\Form\Contract\Type\TypeRegistryInterface:
+        alias: Derafu\Form\Type\TypeRegistry
+
+    Derafu\Form\Contract\Type\TypeResolverInterface:
+        alias: Derafu\Form\Type\TypeResolver
