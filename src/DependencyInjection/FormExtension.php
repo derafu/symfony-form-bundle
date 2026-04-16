@@ -28,6 +28,7 @@ final class FormExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $container->setParameter('derafu_form.twig_prefix', $config['twig_prefix']);
+        $container->setParameter('derafu_form.forms_path', $config['forms_path']);
 
         $loader = new YamlFileLoader(
             $container,

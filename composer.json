@@ -28,7 +28,8 @@
         "php": "^8.5",
         "symfony/framework-bundle": "^8.0",
         "symfony/twig-bundle": "^8.0",
-        "derafu/form": "*"
+        "derafu/form": "*",
+        "derafu/data-processor": "*"
     },
     "require-dev": {
         "ext-xdebug": "*",

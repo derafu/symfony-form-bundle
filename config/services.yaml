@@ -46,6 +46,37 @@ services:
         arguments:
             $typeResolver: '@Derafu\Form\Type\TypeResolver'
 
+    # ── Data Processor ────────────────────────────────────────────────
+    # Created via static factory with all default rules (cast, transform,
+    # sanitize, validate). Apps can swap this for a custom-configured
+    # processor by overriding the alias.
+
+    Derafu\DataProcessor\Contract\ProcessorInterface:
+        factory: ['Derafu\DataProcessor\ProcessorFactory', 'createDefault']
+
+    # ── Form Data Processor ───────────────────────────────────────────
+    # Bridges derafu/form schemas with derafu/data-processor rules.
+    # SchemaToRulesMapper converts JSON Schema constraints (minLength,
+    # format, required, etc.) into data-processor rule strings.
+
+    Derafu\Form\Processor\SchemaToRulesMapper: ~
+
+    Derafu\Form\Processor\FormDataProcessor:
+        arguments:
+            $mapper: '@Derafu\Form\Processor\SchemaToRulesMapper'
+            $processor: '@Derafu\DataProcessor\Contract\ProcessorInterface'
+
+    # ── Form Loader ───────────────────────────────────────────────────
+    # Uses PhpFormLoader from derafu/form. Files are .form.php scripts
+    # that return a Closure (dynamic, receives context) or a plain array.
+    # Paths are registered by FormPathsPass compiler pass:
+    #   1. Bundle resources/forms/ directories (auto-discovered)
+    #   2. App forms_path (highest priority, overrides bundles)
+
+    Derafu\Form\Loader\PhpFormLoader:
+        arguments:
+            $formFactory: '@Derafu\Form\Contract\Factory\FormFactoryInterface'
+
     # ── Interface Aliases ─────────────────────────────────────────────
 
     Derafu\Form\Contract\Factory\FormFactoryInterface:
@@ -56,3 +87,12 @@ services:
 
     Derafu\Form\Contract\Type\TypeResolverInterface:
         alias: Derafu\Form\Type\TypeResolver
+
+    Derafu\Form\Contract\Processor\FormDataProcessorInterface:
+        alias: Derafu\Form\Processor\FormDataProcessor
+
+    Derafu\Form\Contract\Processor\SchemaToRulesMapperInterface:
+        alias: Derafu\Form\Processor\SchemaToRulesMapper
+
+    Derafu\Form\Contract\Loader\FormLoaderInterface:
+        alias: Derafu\Form\Loader\PhpFormLoader

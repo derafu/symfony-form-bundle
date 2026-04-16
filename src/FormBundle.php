@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace Derafu\FormBundle;
 
+use Derafu\FormBundle\DependencyInjection\Compiler\FormPathsPass;
 use Derafu\FormBundle\DependencyInjection\FormExtension;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -27,9 +29,19 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  * derafu/renderer) for form templates. A separate `FormTwigExtension`
  * is registered in Symfony's Twig with a prefix so page templates can
  * call `{{ derafu_form(form) }}` etc.
+ *
+ * A compiler pass auto-discovers `resources/forms/` directories in all
+ * registered bundles and wires them into the PhpFormLoader. The app's
+ * own forms directory has the highest priority (override pattern).
  */
 final class FormBundle extends Bundle
 {
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        $container->addCompilerPass(new FormPathsPass());
+    }
+
     public function getContainerExtension(): ?ExtensionInterface
     {
         if ($this->extension === null) {

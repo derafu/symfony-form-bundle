@@ -31,6 +31,10 @@ final class Configuration implements ConfigurationInterface
                     ->defaultValue('derafu_')
                     ->cannotBeEmpty()
                 ->end()
+                ->scalarNode('forms_path')
+                    ->info('Directory for app-level form definition files (highest priority).')
+                    ->defaultValue('%kernel.project_dir%/resources/forms')
+                ->end()
             ->end()
         ;
 
