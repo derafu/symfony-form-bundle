@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Derafu\FormBundle;
 
 use Derafu\FormBundle\DependencyInjection\Compiler\FormPathsPass;
+use Derafu\FormBundle\DependencyInjection\Compiler\ImportMapEntriesPass;
 use Derafu\FormBundle\DependencyInjection\FormExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
@@ -40,6 +41,7 @@ final class FormBundle extends Bundle
     {
         parent::build($container);
         $container->addCompilerPass(new FormPathsPass());
+        $container->addCompilerPass(new ImportMapEntriesPass());
     }
 
     public function getContainerExtension(): ?ExtensionInterface
