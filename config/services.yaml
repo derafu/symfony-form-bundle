@@ -55,16 +55,16 @@ services:
         factory: ['Derafu\DataProcessor\ProcessorFactory', 'createDefault']
 
     # ── Form Data Processor ───────────────────────────────────────────
-    # Bridges derafu/form schemas with derafu/data-processor rules.
-    # SchemaToRulesMapper converts JSON Schema constraints (minLength,
-    # format, required, etc.) into data-processor rule strings.
 
-    Derafu\Form\Processor\SchemaToRulesMapper: ~
+    Derafu\Form\Processor\FormRulesResolver: ~
+
+    Derafu\Form\Processor\UiSchemaRuleEvaluator: ~
 
     Derafu\Form\Processor\FormDataProcessor:
         arguments:
-            $mapper: '@Derafu\Form\Processor\SchemaToRulesMapper'
+            $resolver: '@Derafu\Form\Processor\FormRulesResolver'
             $processor: '@Derafu\DataProcessor\Contract\ProcessorInterface'
+            $evaluator: '@Derafu\Form\Processor\UiSchemaRuleEvaluator'
 
     # ── Form Loader ───────────────────────────────────────────────────
     # Uses PhpFormLoader from derafu/form. Files are .form.php scripts
@@ -91,8 +91,11 @@ services:
     Derafu\Form\Contract\Processor\FormDataProcessorInterface:
         alias: Derafu\Form\Processor\FormDataProcessor
 
-    Derafu\Form\Contract\Processor\SchemaToRulesMapperInterface:
-        alias: Derafu\Form\Processor\SchemaToRulesMapper
+    Derafu\Form\Contract\Processor\FormRulesResolverInterface:
+        alias: Derafu\Form\Processor\FormRulesResolver
+
+    Derafu\Form\Contract\Processor\UiSchemaRuleEvaluatorInterface:
+        alias: Derafu\Form\Processor\UiSchemaRuleEvaluator
 
     Derafu\Form\Contract\Loader\FormLoaderInterface:
         alias: Derafu\Form\Loader\PhpFormLoader
