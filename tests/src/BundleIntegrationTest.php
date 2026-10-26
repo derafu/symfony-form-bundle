@@ -21,6 +21,7 @@ use Derafu\Form\Loader\PhpFormLoader;
 use Derafu\Form\Renderer\FormTwigExtension;
 use Derafu\FormBundle\DependencyInjection\Compiler\FormPathsPass;
 use Derafu\FormBundle\DependencyInjection\Compiler\ImportMapEntriesPass;
+use Derafu\FormBundle\DependencyInjection\Compiler\RegisterCsrfTokenManagerPass;
 use Derafu\FormBundle\FormBundle;
 use Derafu\TestsFormBundle\Fixture\EmptyBundle;
 use Derafu\TestsFormBundle\Fixture\FirstBundle;
@@ -39,6 +40,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 #[CoversClass(FormBundle::class)]
 #[CoversClass(FormPathsPass::class)]
 #[CoversClass(ImportMapEntriesPass::class)]
+#[CoversClass(RegisterCsrfTokenManagerPass::class)]
 final class BundleIntegrationTest extends TestCase
 {
     private string $project;

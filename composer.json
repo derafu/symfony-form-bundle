@@ -37,6 +37,7 @@
         "symfony/dependency-injection": "^8.1",
         "symfony/framework-bundle": "^8.1",
         "symfony/http-kernel": "^8.1",
+        "symfony/security-csrf": "^8.1",
         "symfony/twig-bundle": "^8.1",
         "symfony/yaml": "^8.1"
     },
@@ -44,7 +45,11 @@
         "ext-xdebug": "*",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan": "^2.3",
-        "phpunit/phpunit": "^13.4"
+        "phpunit/phpunit": "^13.4",
+        "symfony/security-bundle": "^8.1"
+    },
+    "suggest": {
+        "symfony/security-bundle": "Required in practice so security.csrf.token_manager is available for protected Derafu forms."
     },
     "scripts": {
         "docs": "php tools/phpdocumentor run --config=phpdoc.xml",

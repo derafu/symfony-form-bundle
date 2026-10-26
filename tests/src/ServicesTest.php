@@ -234,11 +234,11 @@ final class ServicesTest extends TestCase
         self::assertStringContainsString('class="test-captcha"', $html);
         $processor = $this->service(FormDataProcessorInterface::class);
         self::assertFalse($processor->process($form, ['name' => 'Ada'])->isValid());
-        self::assertFalse($processor->process($form, ['name' => 'Ada', '_token' => $token, $captcha->getResponseField() => 'wrong'])->isValid());
-        $valid = $processor->process($form, ['name' => 'Ada', '_token' => $token, $captcha->getResponseField() => 'solved-' . $form->getId()]);
+        self::assertFalse($processor->process($form, ['name' => 'Ada', FormInterface::CSRF_FIELD => $token, $captcha->getResponseField() => 'wrong'])->isValid());
+        $valid = $processor->process($form, ['name' => 'Ada', FormInterface::CSRF_FIELD => $token, $captcha->getResponseField() => 'solved-' . $form->getId()]);
         self::assertTrue($valid->isValid());
         self::assertSame('Ada', $valid->getReader()->requireString('name'));
-        self::assertFalse($valid->getReader()->hasKey('_token'));
+        self::assertFalse($valid->getReader()->hasKey(FormInterface::CSRF_FIELD));
         self::assertFalse($valid->getReader()->hasKey($captcha->getResponseField()));
     }
 
@@ -249,7 +249,7 @@ final class ServicesTest extends TestCase
         self::assertFalse($this->kernel->getContainer()->has(CsrfTokenManagerInterface::class));
         self::assertFalse($this->kernel->getContainer()->has(CaptchaProviderInterface::class));
         $form = $this->form();
-        self::assertStringNotContainsString('name="_token"', $this->service(FormRendererInterface::class)->render($form));
+        self::assertStringNotContainsString('name="' . FormInterface::CSRF_FIELD . '"', $this->service(FormRendererInterface::class)->render($form));
         self::assertTrue($this->service(FormDataProcessorInterface::class)->process($form, ['name' => 'Ada'])->isValid());
     }
 

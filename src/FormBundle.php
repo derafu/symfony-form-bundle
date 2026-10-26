@@ -16,6 +16,7 @@ use Composer\InstalledVersions;
 use Derafu\Array\ArrayReader;
 use Derafu\FormBundle\DependencyInjection\Compiler\FormPathsPass;
 use Derafu\FormBundle\DependencyInjection\Compiler\ImportMapEntriesPass;
+use Derafu\FormBundle\DependencyInjection\Compiler\RegisterCsrfTokenManagerPass;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -33,6 +34,7 @@ final class FormBundle extends AbstractBundle
         parent::build($container);
         $container->addCompilerPass(new FormPathsPass());
         $container->addCompilerPass(new ImportMapEntriesPass());
+        $container->addCompilerPass(new RegisterCsrfTokenManagerPass());
     }
 
     public function configure(DefinitionConfigurator $definition): void
