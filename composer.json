@@ -21,21 +21,30 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Derafu\\TestsFormBundle\\": "tests/src/"
+            "Derafu\\TestsFormBundle\\": "tests/src/",
+            "Derafu\\TestsFormBundle\\Fixture\\": "tests/fixtures/"
         }
     },
     "require": {
         "php": "^8.5",
-        "symfony/framework-bundle": "^8.0",
-        "symfony/twig-bundle": "^8.0",
+        "derafu/array": "dev-main",
+        "derafu/data-processor": "*",
         "derafu/form": "*",
-        "derafu/data-processor": "*"
+        "derafu/symfony-translation-bundle": "dev-main",
+        "derafu/value": "dev-main",
+        "symfony/asset-mapper": "^8.1",
+        "symfony/config": "^8.1",
+        "symfony/dependency-injection": "^8.1",
+        "symfony/framework-bundle": "^8.1",
+        "symfony/http-kernel": "^8.1",
+        "symfony/twig-bundle": "^8.1",
+        "symfony/yaml": "^8.1"
     },
     "require-dev": {
         "ext-xdebug": "*",
-        "friendsofphp/php-cs-fixer": "^3.94",
-        "phpstan/phpstan": "^1.12",
-        "phpunit/phpunit": "^11.5"
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.3",
+        "phpunit/phpunit": "^13.4"
     },
     "scripts": {
         "docs": "php tools/phpdocumentor run --config=phpdoc.xml",

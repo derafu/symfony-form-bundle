@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\FormBundle\DependencyInjection\Compiler;
 
+use Derafu\Array\ArrayReader;
 use Derafu\Form\Loader\PhpFormLoader;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -46,9 +47,10 @@ final class FormPathsPass implements CompilerPassInterface
         //    kernel.bundles_metadata 'path' points to the namespace root
         //    (e.g. src/), but resources/ is typically one level up at the
         //    package root. Check both locations.
-        $bundlesMetadata = $container->getParameter('kernel.bundles_metadata');
+        $parameters = ArrayReader::fromArray($container->getParameterBag()->all());
+        $bundlesMetadata = $parameters->requireArrayReaders('kernel.bundles_metadata');
         foreach ($bundlesMetadata as $bundleMeta) {
-            $basePath = $bundleMeta['path'];
+            $basePath = $bundleMeta->requireString('path');
             foreach ([$basePath, dirname($basePath)] as $candidate) {
                 $formsDir = $candidate . '/' . self::FORMS_DIR;
                 if (is_dir($formsDir)) {
@@ -59,7 +61,7 @@ final class FormPathsPass implements CompilerPassInterface
         }
 
         // 2. Add app path last (highest priority → overrides bundles).
-        $appFormsPath = $container->getParameter('derafu_form.forms_path');
+        $appFormsPath = $parameters->requireString('derafu_form.forms_path');
         $loaderDefinition->addMethodCall('addPath', [$appFormsPath]);
     }
 }

@@ -1,0 +1,44 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # The Symfony page environment uses its own prefixed extension. The form
+    # renderer retains the package's internal rendering environment and wiring.
+    Derafu\Form\Renderer\FormTwigExtension:
+        arguments:
+            $renderer: '@Derafu\Form\Contract\Renderer\FormRendererInterface'
+            $charset: 'UTF-8'
+            $prefix: '%derafu_form.twig_prefix%'
+        tags:
+            - { name: twig.extension }
+
+    # FormPathsPass supplies bundle paths first and the application's path last.
+    Derafu\Form\Loader\PhpFormLoader:
+        arguments:
+            $paths: []
+
+    Derafu\Form\Contract\Loader\FormLoaderInterface:
+        alias: Derafu\Form\Loader\PhpFormLoader
+
+    # Retain concrete service IDs while using the package's contract services.
+    # The concrete factory refers to the actual factory inside its decorator,
+    # so consumers typed to FormFactory continue to receive a FormFactory.
+    Derafu\Form\Factory\FormFactory:
+        alias: Derafu\Form\Factory\TranslatingFormFactory.inner
+
+    Derafu\Form\Type\TypeRegistry:
+        alias: Derafu\Form\Contract\Type\TypeRegistryInterface
+
+    Derafu\Form\Type\TypeResolver:
+        alias: Derafu\Form\Contract\Type\TypeResolverInterface
+
+    Derafu\Form\Processor\FormDataProcessor:
+        alias: Derafu\Form\Contract\Processor\FormDataProcessorInterface
+
+    Derafu\Form\Processor\FormRulesResolver:
+        alias: Derafu\Form\Contract\Processor\FormRulesResolverInterface
+
+    Derafu\Form\Processor\UiSchemaRuleEvaluator:
+        alias: Derafu\Form\Contract\Processor\UiSchemaRuleEvaluatorInterface

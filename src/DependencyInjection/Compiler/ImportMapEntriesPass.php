@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\FormBundle\DependencyInjection\Compiler;
 
+use Derafu\Array\ArrayReader;
+use Derafu\Value\ValueType;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 
 /**
  * Ensures that derafu/form JS assets are registered in the project's
@@ -32,25 +35,34 @@ final class ImportMapEntriesPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        $projectDir    = $container->getParameter('kernel.project_dir');
+        $projectDir = ArrayReader::fromArray($container->getParameterBag()->all())
+            ->requireString('kernel.project_dir');
         $importMapPath = $projectDir . '/importmap.php';
 
         if (!is_file($importMapPath)) {
             return;
         }
 
+        $original = @file_get_contents($importMapPath);
+        if ($original === false) {
+            throw new RuntimeException(sprintf('Cannot read import map: %s', $importMapPath));
+        }
+
         $entries = $this->discoverEntries($projectDir);
-        $current = require $importMapPath;
+        $current = ArrayReader::fromArray(
+            ['entries' => require $importMapPath],
+            source: $importMapPath,
+        )->requireMapOf('entries', ValueType::map());
         $missing = array_diff_key($entries, $current);
 
         if (empty($missing)) {
             return;
         }
 
-        file_put_contents(
-            $importMapPath,
-            $this->render($importMapPath, array_merge($current, $missing)),
-        );
+        $content = $this->render($original, array_merge($current, $missing));
+        if (@file_put_contents($importMapPath, $content) !== strlen($content)) {
+            throw new RuntimeException(sprintf('Cannot write import map: %s', $importMapPath));
+        }
     }
 
     /** @return array<string, array<string, string>> */
@@ -72,9 +84,8 @@ final class ImportMapEntriesPass implements CompilerPassInterface
     }
 
     /** @param array<string, array<string, mixed>> $entries */
-    private function render(string $path, array $entries): string
+    private function render(string $original, array $entries): string
     {
-        $original  = file_get_contents($path);
         $returnPos = strrpos($original, 'return [');
         $header    = $returnPos !== false
             ? substr($original, 0, $returnPos)
