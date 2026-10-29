@@ -46,7 +46,8 @@
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4",
-        "symfony/security-bundle": "^8.1"
+        "symfony/security-bundle": "^8.1",
+        "symfony/form": "^8.1"
     },
     "suggest": {
         "symfony/security-bundle": "Required in practice so security.csrf.token_manager is available for protected Derafu forms."

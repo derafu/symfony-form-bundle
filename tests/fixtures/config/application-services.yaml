@@ -1,0 +1,11 @@
+services:
+    Derafu\Form\Contract\Csrf\CsrfTokenManagerInterface:
+        class: Derafu\TestsFormBundle\Fixture\InMemoryCsrfTokenManager
+        public: true
+
+    Derafu\Form\Contract\Captcha\CaptchaProviderInterface:
+        class: Derafu\TestsFormBundle\Fixture\InMemoryCaptchaProvider
+        public: true
+
+    Derafu\TestsFormBundle\Fixture\ApplicationRuleRegistrar:
+        tags: [derafu_data_processor.rule_registrar]

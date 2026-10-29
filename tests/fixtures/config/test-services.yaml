@@ -1,0 +1,7 @@
+services:
+    test.twig:
+        alias: twig
+        public: true
+    test.translator:
+        alias: translator
+        public: true

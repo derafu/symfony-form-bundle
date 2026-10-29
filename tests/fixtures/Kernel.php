@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace Derafu\TestsFormBundle\Fixture;
 
-use Derafu\Form\Contract\Captcha\CaptchaProviderInterface;
-use Derafu\Form\Contract\Csrf\CsrfTokenManagerInterface;
+use Composer\InstalledVersions;
 use Derafu\FormBundle\FormBundle;
 use Derafu\TranslationBundle\TranslationBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
@@ -38,6 +40,7 @@ final class Kernel extends BaseKernel
         private readonly array $config = [],
         private readonly array $resourceBundles = [],
         private readonly bool $applicationServices = false,
+        private readonly bool $nativeForms = false,
     ) {
         parent::__construct('test', true);
     }
@@ -59,19 +62,24 @@ final class Kernel extends BaseKernel
                 'secret' => 'form-bundle-test-secret',
                 'default_locale' => 'es',
                 'translator' => ['fallbacks' => ['en']],
+                'form' => ['enabled' => $this->nativeForms],
             ]);
             $container->loadFromExtension('derafu_form', $this->config);
             $container->loadFromExtension('twig', []);
+            $services = new YamlFileLoader($container, new FileLocator(__DIR__ . '/config'));
+            $services->load('test-services.yaml');
             if ($this->applicationServices) {
-                $container->register(InMemoryCsrfTokenManager::class, InMemoryCsrfTokenManager::class)->setPublic(true);
-                $container->setAlias(CsrfTokenManagerInterface::class, InMemoryCsrfTokenManager::class);
-                $container->register(InMemoryCaptchaProvider::class, InMemoryCaptchaProvider::class)->setPublic(true);
-                $container->setAlias(CaptchaProviderInterface::class, InMemoryCaptchaProvider::class);
-                $container->register(ApplicationRuleRegistrar::class, ApplicationRuleRegistrar::class)
-                    ->addTag('derafu_data_processor.rule_registrar');
+                $services->load('application-services.yaml');
             }
-            $container->setAlias('test.twig', 'twig')->setPublic(true);
-            $container->setAlias('test.translator', 'translator')->setPublic(true);
+            if ($this->nativeForms) {
+                // Symfony omits this configuration when Form is require-dev
+                // but TwigBundle is a production dependency of the root package.
+                // Load Symfony's real configuration for the consuming-app case.
+                (new PhpFileLoader($container, new FileLocator()))->load(
+                    InstalledVersions::getInstallPath('symfony/twig-bundle') . '/Resources/config/form.php',
+                );
+                $services->load('native-form-services.yaml');
+            }
             // Keep every package definition reachable, so removal of unused
             // private services cannot conceal an invalid constructor or alias.
             $container->addCompilerPass(new class () implements CompilerPassInterface {

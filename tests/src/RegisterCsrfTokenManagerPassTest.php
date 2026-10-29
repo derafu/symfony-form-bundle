@@ -33,8 +33,8 @@ final class RegisterCsrfTokenManagerPassTest extends TestCase
         (new RegisterCsrfTokenManagerPass())->process($container);
 
         $this->assertTrue($container->has(CsrfTokenManagerInterface::class));
-        $this->assertSame(SymfonyCsrfTokenManager::class, (string) $container->getAlias(CsrfTokenManagerInterface::class));
-        $definition = $container->getDefinition(SymfonyCsrfTokenManager::class);
+        $definition = $container->getDefinition(CsrfTokenManagerInterface::class);
+        $this->assertSame(SymfonyCsrfTokenManager::class, $definition->getClass());
         $reference = $definition->getArgument('$symfonyTokenManager');
         $this->assertInstanceOf(Reference::class, $reference);
         $this->assertSame('security.csrf.token_manager', $reference->__toString());

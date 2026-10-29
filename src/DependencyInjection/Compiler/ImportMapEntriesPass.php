@@ -33,6 +33,9 @@ final class ImportMapEntriesPass implements CompilerPassInterface
     /** Path relative to kernel.project_dir where the JS files live. */
     private const string JS_DIR = 'vendor/derafu/form/resources/js';
 
+    /**
+     * {@inheritDoc}
+     */
     public function process(ContainerBuilder $container): void
     {
         $projectDir = ArrayReader::fromArray($container->getParameterBag()->all())

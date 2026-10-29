@@ -1,0 +1,4 @@
+services:
+    test.symfony_form_factory:
+        alias: form.factory
+        public: true

@@ -25,6 +25,9 @@ final class RegisterCsrfTokenManagerPass implements CompilerPassInterface
 {
     private const SYMFONY_CSRF_MANAGER = 'security.csrf.token_manager';
 
+    /**
+     * {@inheritDoc}
+     */
     public function process(ContainerBuilder $container): void
     {
         if (!$container->has(self::SYMFONY_CSRF_MANAGER)) {
@@ -36,11 +39,10 @@ final class RegisterCsrfTokenManagerPass implements CompilerPassInterface
         }
 
         $container
-            ->register(SymfonyCsrfTokenManager::class, SymfonyCsrfTokenManager::class)
+            ->register(CsrfTokenManagerInterface::class, SymfonyCsrfTokenManager::class)
             ->setAutowired(false)
             ->setAutoconfigured(false)
             ->setArgument('$symfonyTokenManager', new Reference(self::SYMFONY_CSRF_MANAGER));
 
-        $container->setAlias(CsrfTokenManagerInterface::class, SymfonyCsrfTokenManager::class);
     }
 }

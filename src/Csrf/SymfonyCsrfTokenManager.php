@@ -26,11 +26,17 @@ final class SymfonyCsrfTokenManager implements CsrfTokenManagerInterface
     ) {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getToken(string $id): string
     {
         return $this->symfonyTokenManager->getToken($id)->getValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function isValid(string $id, string $token): bool
     {
         return $this->symfonyTokenManager->isTokenValid(new CsrfToken($id, $token));

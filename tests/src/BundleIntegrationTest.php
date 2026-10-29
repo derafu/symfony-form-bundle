@@ -15,11 +15,13 @@ namespace Derafu\TestsFormBundle;
 use Composer\InstalledVersions;
 use Derafu\Array\Exception\TypeMismatchException;
 use Derafu\Form\Contract\Factory\FormFactoryInterface;
+use Derafu\Form\Contract\Loader\FormLoaderInterface;
 use Derafu\Form\Contract\Processor\FormDataProcessorInterface;
 use Derafu\Form\Contract\Renderer\FormRendererInterface;
 use Derafu\Form\Loader\PhpFormLoader;
 use Derafu\Form\Renderer\FormTwigExtension;
 use Derafu\FormBundle\DependencyInjection\Compiler\FormPathsPass;
+use Derafu\FormBundle\DependencyInjection\Compiler\FormTemplatesPass;
 use Derafu\FormBundle\DependencyInjection\Compiler\ImportMapEntriesPass;
 use Derafu\FormBundle\DependencyInjection\Compiler\RegisterCsrfTokenManagerPass;
 use Derafu\FormBundle\FormBundle;
@@ -39,6 +41,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 #[CoversClass(FormBundle::class)]
 #[CoversClass(FormPathsPass::class)]
+#[CoversClass(FormTemplatesPass::class)]
 #[CoversClass(ImportMapEntriesPass::class)]
 #[CoversClass(RegisterCsrfTokenManagerPass::class)]
 final class BundleIntegrationTest extends TestCase
@@ -90,7 +93,7 @@ final class BundleIntegrationTest extends TestCase
         $container = new ContainerBuilder();
         $container->setParameter('kernel.project_dir', $this->project);
         $container->setParameter('kernel.bundles_metadata', []);
-        $container->setParameter('derafu_form.forms_path', $this->project . '/resources/forms');
+        $container->setParameter('derafu.form_bundle.forms_path', $this->project . '/resources/forms');
 
         return $container;
     }
@@ -126,29 +129,27 @@ final class BundleIntegrationTest extends TestCase
         ], $container->getExtensionConfig('framework'));
         $this->write('resources/forms/contact.form.php', "<?php return ['data' => ['name' => 'Ada']];");
         $container = $this->boot()->getContainer();
-        self::assertSame('derafu_', $container->getParameter('derafu_form.twig_prefix'));
         self::assertInstanceOf(FormFactoryInterface::class, $container->get(FormFactoryInterface::class));
         self::assertInstanceOf(FormDataProcessorInterface::class, $container->get(FormDataProcessorInterface::class));
         self::assertInstanceOf(FormRendererInterface::class, $container->get(FormRendererInterface::class));
         $twig = $container->get(FormTwigExtension::class);
         self::assertInstanceOf(FormTwigExtension::class, $twig);
-        self::assertSame('derafu_form', $twig->getFunctions()[0]->getName());
-        $loader = $container->get(PhpFormLoader::class);
+        self::assertSame('form', $twig->getFunctions()[0]->getName());
+        $loader = $container->get(FormLoaderInterface::class);
         self::assertInstanceOf(PhpFormLoader::class, $loader);
         self::assertArrayHasKey('name', $loader->load('contact')->getFields());
     }
 
     public function testCustomConfigurationReachesTheServices(): void
     {
-        $container = $this->boot(['twig_prefix' => 'custom_', 'forms_path' => '/custom/forms'])->getContainer();
-        self::assertSame('custom_', $container->getParameter('derafu_form.twig_prefix'));
-        self::assertSame('/custom/forms', $container->getParameter('derafu_form.forms_path'));
+        $container = $this->boot(['forms_path' => '/custom/forms'])->getContainer();
+        self::assertSame('/custom/forms', $container->getParameter('derafu.form_bundle.forms_path'));
     }
 
-    public function testEmptyTwigPrefixIsRejected(): void
+    public function testRetiredTwigPrefixOptionIsRejected(): void
     {
         $this->expectException(InvalidConfigurationException::class);
-        $this->boot(['twig_prefix' => '']);
+        $this->boot(['twig_prefix' => 'custom_']);
     }
 
     public function testFormsAreRegisteredInOverrideOrderAndTheApplicationWins(): void
@@ -170,14 +171,14 @@ final class BundleIntegrationTest extends TestCase
             ['addPath', [$this->project . '/first/resources/forms']],
             ['addPath', [$this->project . '/second/resources/forms']],
             ['addPath', ['%kernel.project_dir%/resources/forms']],
-        ], $container->getDefinition(PhpFormLoader::class)->getMethodCalls());
+        ], $container->getDefinition(FormLoaderInterface::class)->getMethodCalls());
         (new Filesystem())->mkdir([$this->project . '/first/src', $this->project . '/empty/src']);
         $application = $this->boot(bundles: [
             new FirstBundle($this->project . '/first/src'),
             new SecondBundle($this->project . '/second'),
             new EmptyBundle($this->project . '/empty/src'),
         ])->getContainer();
-        $loader = $application->get(PhpFormLoader::class);
+        $loader = $application->get(FormLoaderInterface::class);
         self::assertInstanceOf(PhpFormLoader::class, $loader);
         self::assertArrayHasKey('application', $loader->load('contact')->getFields());
         unlink($this->project . '/resources/forms/contact.form.php');
@@ -198,7 +199,7 @@ final class BundleIntegrationTest extends TestCase
         yield 'collection is not an array' => ['kernel.bundles_metadata', 'invalid'];
         yield 'bundle is not an array' => ['kernel.bundles_metadata', ['Example' => 'invalid']];
         yield 'path is not a string' => ['kernel.bundles_metadata', ['Example' => ['path' => 12]]];
-        yield 'application path is not a string' => ['derafu_form.forms_path', []];
+        yield 'application path is not a string' => ['derafu.form_bundle.forms_path', []];
     }
 
     /** @param array<string, mixed>|string $value */
@@ -206,7 +207,7 @@ final class BundleIntegrationTest extends TestCase
     public function testFormPassRejectsInvalidParameterTypes(string $parameter, array|string $value): void
     {
         $container = $this->container();
-        $container->register(PhpFormLoader::class);
+        $container->register(FormLoaderInterface::class, PhpFormLoader::class);
         $container->setParameter($parameter, $value);
         $this->expectException(TypeMismatchException::class);
         (new FormPathsPass())->process($container);
