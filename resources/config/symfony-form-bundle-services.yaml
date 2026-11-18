@@ -16,6 +16,9 @@ services:
     Derafu\FormBundle\Twig\FormIntegrationExtension:
         tags: [twig.extension]
 
+    # Builds the data of a form submission from the request, including its files.
+    Derafu\FormBundle\Http\FormRequestData: ~
+
     Derafu\Twig\Contract\TwigServiceInterface:
         class: Derafu\Twig\Service\TwigService
         # Defers access to the same native environment until rendering starts:
