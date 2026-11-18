@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Derafu\TestsFormBundle;
 
+use Derafu\Array\Exception\ArrayException;
 use Derafu\FormBundle\Http\FormRequestData;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -44,9 +45,9 @@ final class FormRequestDataTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $fields
+     * @param array<array-key, mixed> $fields
      * @param array<string, mixed> $files
-     * @return array<array-key, mixed>
+     * @return array<string, mixed>
      */
     private function data(array $fields = [], array $files = []): array
     {
@@ -119,6 +120,13 @@ final class FormRequestDataTest extends TestCase
         $this->assertSame('Factura', $data['documento']['titulo']);
         $this->assertIsArray($data['documento']['adjunto']);
         $this->assertSame('adjunto.xml', $data['documento']['adjunto']['name']);
+    }
+
+    public function testASubmissionWithAFieldNamedByANumberIsNotAcceptedAsData(): void
+    {
+        $this->expectException(ArrayException::class);
+
+        $this->data([0 => 'value', 'name' => 'Ada']);
     }
 
     public function testAFileTakesThePlaceOfAFieldOfTheBodyWithTheSameName(): void

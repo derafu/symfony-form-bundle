@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Derafu\FormBundle\Http;
 
+use Derafu\Array\ArrayReader;
+use Derafu\Array\Exception\ArrayException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -37,14 +39,17 @@ final class FormRequestData
      * another one, keeps the structure of the submission. A file takes the place
      * of a field of the body that has the same name.
      *
-     * @return array<array-key, mixed>
+     * @return array<string, mixed>
+     * @throws ArrayException If the name of a field of the submission is a number.
      */
     public function from(Request $request): array
     {
-        return array_replace_recursive(
-            $request->request->all(),
-            $this->files($request->files->all())
-        );
+        return ArrayReader::fromArray(
+            array_replace_recursive(
+                $request->request->all(),
+                $this->files($request->files->all())
+            )
+        )->toMap();
     }
 
     /**

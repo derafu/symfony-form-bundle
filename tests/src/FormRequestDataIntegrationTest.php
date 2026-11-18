@@ -15,8 +15,10 @@ namespace Derafu\TestsFormBundle;
 use Composer\InstalledVersions;
 use Derafu\Form\Contract\Factory\FormFactoryInterface;
 use Derafu\Form\Contract\FormInterface;
+use Derafu\Form\Contract\Loader\FormLoaderInterface;
 use Derafu\Form\Contract\Processor\FormDataProcessorInterface;
 use Derafu\Form\Contract\Processor\ProcessResultInterface;
+use Derafu\Form\Contract\Renderer\FormRendererInterface;
 use Derafu\FormBundle\Http\FormRequestData;
 use Derafu\TestsFormBundle\Fixture\Kernel;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -56,6 +58,11 @@ final class FormRequestDataIntegrationTest extends TestCase
             $this->project . '/vendor/derafu/form/resources/js',
         );
         mkdir($this->project . '/uploads');
+        mkdir($this->project . '/resources/forms', 0777, true);
+        file_put_contents(
+            $this->project . '/resources/forms/upload.form.php',
+            '<?php return ' . var_export($this->definition(), true) . ';'
+        );
         $this->kernel = new Kernel($this->project);
         $this->kernel->boot();
     }
@@ -86,14 +93,17 @@ final class FormRequestDataIntegrationTest extends TestCase
         return $service;
     }
 
-    private function form(bool $multiple = false): FormInterface
+    /**
+     * @return array<string, mixed>
+     */
+    private function definition(bool $multiple = false): array
     {
         $control = ['type' => 'file', 'accept' => '.xml'];
         if ($multiple) {
             $control['multiple'] = true;
         }
 
-        return $this->service(FormFactoryInterface::class)->create([
+        return [
             'schema' => [
                 'name' => 'upload',
                 'type' => 'object',
@@ -111,7 +121,12 @@ final class FormRequestDataIntegrationTest extends TestCase
                 ],
             ],
             'options' => ['csrf_protection' => false],
-        ]);
+        ];
+    }
+
+    private function form(bool $multiple = false): FormInterface
+    {
+        return $this->service(FormFactoryInterface::class)->create($this->definition($multiple));
     }
 
     private function file(string $name, string $content): UploadedFile
@@ -187,6 +202,22 @@ final class FormRequestDataIntegrationTest extends TestCase
 
         $this->assertFalse($result->isValid());
         $this->assertTrue($result->hasFieldErrors('archivo'));
+    }
+
+    public function testTheDataOfTheRequestLoadsTheFormAndThenItIsProcessed(): void
+    {
+        $request = Request::create('/', 'POST', ['trackId' => '12'], [], [
+            'archivo' => $this->file('factura.xml', '<?xml version="1.0"?><DTE/>'),
+        ]);
+        $data = $this->service(FormRequestData::class)->from($request);
+
+        // The form is loaded by its name with the submitted data, as a
+        // controller does to show it again, and then it is processed.
+        $form = $this->service(FormLoaderInterface::class)->load('upload', data: $data);
+        $result = $this->service(FormDataProcessorInterface::class)->process($form, $data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertStringContainsString('value="12"', $this->service(FormRendererInterface::class)->render($form));
     }
 
     public function testTheFilesOfSymfonyAreRejectedByTheProcessorAsTheyAre(): void
