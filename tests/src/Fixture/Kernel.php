@@ -66,7 +66,7 @@ final class Kernel extends BaseKernel
             ]);
             $container->loadFromExtension('derafu_form', $this->config);
             $container->loadFromExtension('twig', []);
-            $services = new YamlFileLoader($container, new FileLocator(__DIR__ . '/config'));
+            $services = new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 2) . '/fixtures/config'));
             $services->load('test-services.yaml');
             if ($this->applicationServices) {
                 $services->load('application-services.yaml');
